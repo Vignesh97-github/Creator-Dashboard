@@ -1,8 +1,8 @@
-const User = require('../models/User.js');
-const CreditTransaction = require('../models/CreditTransaction.js');
+import User from '../models/User.js';
+// import CreditTransaction from '../models/CreditTransaction.js';
 
 // Get user credits
-exports.getUserCredits = async (req, res) => {
+export const getUserCredits = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -21,7 +21,7 @@ exports.getUserCredits = async (req, res) => {
 };
 
 // Purchase credits
-exports.purchaseCredits = async (req, res) => {
+export const purchaseCredits = async (req, res) => {
   try {
     const { amount, paymentMethod } = req.body;
     const user = await User.findById(req.user.id);
@@ -65,7 +65,7 @@ exports.purchaseCredits = async (req, res) => {
 };
 
 // Get credit packages
-exports.getCreditPackages = async (req, res) => {
+export const getCreditPackages = async (req, res) => {
   try {
     const packages = [
       {
@@ -96,7 +96,7 @@ exports.getCreditPackages = async (req, res) => {
 };
 
 // Get transaction history
-exports.getTransactionHistory = async (req, res) => {
+export const getTransactionHistory = async (req, res) => {
   try {
     const transactions = await CreditTransaction.find({ user: req.user.id })
       .sort({ createdAt: -1 });
@@ -109,7 +109,7 @@ exports.getTransactionHistory = async (req, res) => {
 };
 
 // Get system credit stats (admin only)
-exports.getSystemCreditStats = async (req, res) => {
+export const getSystemCreditStats = async (req, res) => {
   try {
     const totalCredits = await User.aggregate([
       { $group: { _id: null, total: { $sum: '$credits' } } },
@@ -127,4 +127,95 @@ exports.getSystemCreditStats = async (req, res) => {
     console.error('Get credit stats error:', error);
     res.status(500).json({ message: 'Error fetching credit statistics' });
   }
+};
+
+export const getBalance = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        res.json({ balance: user.credits });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getTransactions = async (req, res) => {
+    try {
+        const transactions = await CreditTransaction.find({ user: req.user._id })
+            .sort({ createdAt: -1 });
+        res.json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const transferCredits = async (req, res) => {
+    try {
+        const { recipientId, amount } = req.body;
+        const sender = await User.findById(req.user._id);
+        const recipient = await User.findById(recipientId);
+
+        if (!recipient) {
+            return res.status(404).json({ message: 'Recipient not found' });
+        }
+
+        if (sender.credits < amount) {
+            return res.status(400).json({ message: 'Insufficient credits' });
+        }
+
+        sender.credits -= amount;
+        recipient.credits += amount;
+
+        await sender.save();
+        await recipient.save();
+
+        const transaction = new CreditTransaction({
+            user: req.user._id,
+            amount: -amount,
+            type: 'transfer',
+            description: `Transfer to ${recipient.name}`
+        });
+        await transaction.save();
+
+        res.json({ balance: sender.credits, transaction });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export const getAllTransactions = async (req, res) => {
+    try {
+        const transactions = await CreditTransaction.find()
+            .populate('user', 'name email')
+            .sort({ createdAt: -1 });
+        res.json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const awardCredits = async (req, res) => {
+    try {
+        const { userId, amount, reason } = req.body;
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.credits += amount;
+        await user.save();
+
+        const transaction = new CreditTransaction({
+            user: userId,
+            amount,
+            type: 'award',
+            description: reason || 'Admin credit award'
+        });
+        await transaction.save();
+
+        res.json({ balance: user.credits, transaction });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 }; 
+

@@ -1,11 +1,15 @@
-const User = require('../models/User.js');
-const Activity = require('../models/Activity.js');
+import User from '../models/User.js';
+import Activity from '../models/Activity.js';
 
 const awardCredits = async (req, res, next) => {
   if (!req.userId) return next();
   
   try {
     const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     let creditsAwarded = 0;
     let action = '';
     
@@ -54,4 +58,4 @@ const awardCredits = async (req, res, next) => {
   }
 };
 
-module.exports = awardCredits; 
+export default awardCredits; 

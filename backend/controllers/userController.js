@@ -1,8 +1,8 @@
-const User = require('../models/User.js');
-const cloudinary = require('../config/cloudinary.js');
+import User from '../models/User.js';
+import cloudinary from '../config/cloudinary.js';
 
 // Get all users (admin only)
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json(users);
@@ -13,7 +13,7 @@ exports.getUsers = async (req, res) => {
 };
 
 // Get user by ID
-exports.getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
@@ -27,7 +27,7 @@ exports.getUserById = async (req, res) => {
 };
 
 // Update user profile
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const { name, email, bio, website, socialLinks } = req.body;
     const user = await User.findById(req.user.id);
@@ -62,7 +62,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 // Upload avatar
-exports.uploadAvatar = async (req, res) => {
+export const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -95,7 +95,7 @@ exports.uploadAvatar = async (req, res) => {
 };
 
 // Update user role (admin only)
-exports.updateUserRole = async (req, res) => {
+export const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
     const user = await User.findById(req.params.id);
@@ -118,7 +118,7 @@ exports.updateUserRole = async (req, res) => {
 };
 
 // Delete user (admin only)
-exports.deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {

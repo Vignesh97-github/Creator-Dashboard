@@ -1,19 +1,22 @@
-const express = require('express');
+import express from 'express';
+import { getUsers, getUserById, updateProfile, uploadAvatar, updateUserRole, deleteUser } from '../controllers/userController.js';
+import auth from '../middleware/auth.js';
+import multer from 'multer';
+import { upload } from '../middleware/multer.middleware.js'
+// import admin from '../middleware/admin.js';
+// import upload from '../middleware/upload.js';
+
 const router = express.Router();
-const userController = require('../controllers/userController.js');
-const auth = require('../middleware/auth.js');
-// const admin = require('../middleware/admin.js');
-// const upload = require('../middleware/upload.js');
 
 // Protected routes
-router.get('/profile', auth, userController.getUserById);
-router.put('/profile', auth, userController.updateProfile);
-router.post('/avatar', auth, upload.single('avatar'), userController.uploadAvatar);
+router.get('/profile', auth, getUserById);
+router.put('/profile', auth, updateProfile);
+router.post('/avatar', auth, upload.single('avatar'), uploadAvatar);
 
 // Admin routes
-router.get('/', [auth, admin], userController.getUsers);
-router.get('/:id', [auth, admin], userController.getUserById);
-router.put('/:id/role', [auth, admin], userController.updateUserRole);
-router.delete('/:id', [auth, admin], userController.deleteUser);
+// router.get('/', [auth, admin], getUsers);
+// router.get('/:id', [auth, admin], getUserById);
+// router.put('/:id/role', [auth, admin], updateUserRole);
+// router.delete('/:id', [auth, admin], deleteUser);
 
-module.exports = router; 
+export default router; 

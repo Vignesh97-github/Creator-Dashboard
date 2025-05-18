@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 /**
  * Creates an axios instance with default configuration
@@ -6,7 +6,7 @@ const axios = require('axios');
  * @param {Object} headers - Default headers to include
  * @returns {Object} Axios instance
  */
-const createApiClient = (baseURL, headers = {}) => {
+export const createApiClient = (baseURL, headers = {}) => {
   return axios.create({
     baseURL,
     headers: {
@@ -21,7 +21,7 @@ const createApiClient = (baseURL, headers = {}) => {
  * @param {Error} error - The error object
  * @returns {Object} Formatted error object
  */
-const handleApiError = (error) => {
+export const handleApiError = (error) => {
   if (error.response) {
     // The request was made and the server responded with a status code
     // that falls out of the range of 2xx
@@ -53,7 +53,7 @@ const handleApiError = (error) => {
  * @param {Object} schema - The validation schema
  * @returns {boolean} Whether the data is valid
  */
-const validateResponse = (data, schema) => {
+export const validateResponse = (data, schema) => {
   try {
     // Basic schema validation
     for (const [key, type] of Object.entries(schema)) {
@@ -78,7 +78,7 @@ const validateResponse = (data, schema) => {
  * @param {number} delay - Delay between retries in milliseconds
  * @returns {Promise} The API call result
  */
-const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
+export const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
   let lastError;
   
   for (let i = 0; i < maxRetries; i++) {
@@ -101,7 +101,7 @@ const retryApiCall = async (apiCall, maxRetries = 3, delay = 1000) => {
  * @param {Object} options - Formatting options
  * @returns {Object} Formatted response data
  */
-const formatResponse = (data, options = {}) => {
+export const formatResponse = (data, options = {}) => {
   const {
     snakeToCamel = true,
     removeNulls = true,
@@ -139,12 +139,4 @@ const formatResponse = (data, options = {}) => {
   }
 
   return formatted;
-};
-
-module.exports = {
-  createApiClient,
-  handleApiError,
-  validateResponse,
-  retryApiCall,
-  formatResponse
 }; 

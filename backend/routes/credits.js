@@ -1,16 +1,17 @@
-const express = require('express');
+import express from 'express';
+import {getUserCredits, purchaseCredits, getCreditPackages, getTransactionHistory, getSystemCreditStats  } from '../controllers/creditController.js';
+import auth from '../middleware/auth.js';
+import admin from '../middleware/admin.js';
+
 const router = express.Router();
-const creditController = require('../controllers/creditController.js');
-const auth = require('../middleware/auth.js');
-const admin = require('../middleware/admin.js');
 
 // Protected routes
-router.get('/', auth, creditController.getUserCredits);
-router.post('/purchase', auth, creditController.purchaseCredits);
-router.get('/packages', auth, creditController.getCreditPackages);
-router.get('/transactions', auth, creditController.getTransactionHistory);
+router.get('/', auth, getUserCredits);
+router.post('/purchase', auth, purchaseCredits);
+router.get('/packages', auth, getCreditPackages);
+router.get('/transactions', auth, getTransactionHistory);
 
 // Admin routes
-router.get('/stats', [auth, admin], creditController.getSystemCreditStats);
+router.get('/stats', [auth, admin], getSystemCreditStats);
 
-module.exports = router; 
+export default router; 

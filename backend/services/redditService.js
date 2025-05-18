@@ -1,5 +1,5 @@
-const axios = require('axios');
-const Post = require('../models/Post');
+import axios from 'axios';
+import Post from '../models/Post.js';
 
 const fetchRedditPosts = async () => {
   try {
@@ -30,4 +30,45 @@ const fetchRedditPosts = async () => {
   }
 };
 
-module.exports = { fetchRedditPosts };
+const getRedditPosts = async (subreddit) => {
+  try {
+    const response = await axios.get(`https://www.reddit.com/r/${subreddit}/hot.json`, {
+      headers: {
+        'User-Agent': 'CreatorDashboard/1.0.0'
+      }
+    });
+    return response.data.data.children;
+  } catch (error) {
+    console.error('Reddit API Error:', error);
+    throw error;
+  }
+};
+
+const saveRedditPosts = async (posts, userId) => {
+  try {
+    const formattedPosts = posts.map(post => ({
+      content: post.data.title,
+      source: 'reddit',
+      sourceId: post.data.id,
+      user: userId,
+      metadata: {
+        upvotes: post.data.ups,
+        downvotes: post.data.downs,
+        comments: post.data.num_comments,
+        subreddit: post.data.subreddit
+      }
+    }));
+
+    await Post.insertMany(formattedPosts);
+    return formattedPosts;
+  } catch (error) {
+    console.error('Save Reddit Posts Error:', error);
+    throw error;
+  }
+};
+
+export default {
+  fetchRedditPosts,
+  getRedditPosts,
+  saveRedditPosts
+};

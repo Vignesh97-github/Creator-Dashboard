@@ -1,10 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const activitySchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  action: { type: String, required: true },
-  creditsEarned: { type: Number, default: 0 },
+  type: { type: String, required: true, enum: ['post', 'like', 'share', 'comment', 'credit'] },
   post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
+  credits: { type: Number, default: 0 },
+  description: String
 }, { timestamps: true });
 
-module.exports = mongoose.model('Activity', activitySchema); 
+const Activity = mongoose.model('Activity', activitySchema);
+
+export default Activity; 

@@ -1,14 +1,12 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const helmet = require('helmet');
-const connectDB = require('./config/db.js');
-
-// Route imports
-const authRoutes = require('./routes/auth.js');
-const feedRoutes = require('./routes/feed.js');
-const userRoutes = require('./routes/users.js');
-const creditRoutes = require('./routes/credits.js');
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import connectDB from './config/db.js';
+import authRoutes from './routes/auth.js';
+import feedRoutes from './routes/feed.js';
+import userRoutes from './routes/users.js';
+import creditRoutes from './routes/credits.js';
 
 // Initialize app
 const app = express();
@@ -34,4 +32,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-module.exports = app;
+export default app;

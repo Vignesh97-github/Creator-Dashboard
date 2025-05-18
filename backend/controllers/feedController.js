@@ -1,14 +1,14 @@
-const Post = require('../models/Post.js');
-const User = require('../models/User.js');
-const Activity = require('../models/Activity.js');
-const redditService = require('../services/redditService.js');
-const twitterService = require('../services/twitterService.js');
+import Post from '../models/Post.js';
+import User from '../models/User.js';
+import Activity from '../models/Activity.js';
+import redditService from '../services/redditService.js';
+import twitterService from '../services/twitterService.js';
 
-const getFeed = async (req, res) => {
+export const getFeed = async (req, res) => {
   try {
     // Fetch from APIs
-    const twitterPosts = await twitterService();
-    const redditPosts = await redditService();
+    const twitterPosts = await twitterService.fetchTwitterPosts();
+    const redditPosts = await redditService.fetchRedditPosts();
     
     // Combine and sort by date
     const allPosts = [...twitterPosts, ...redditPosts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -24,7 +24,7 @@ const getFeed = async (req, res) => {
     // Get posts from DB (to include any user-specific data like saved status)
     const dbPosts = await Post.find({
       _id: { $in: allPosts.map(p => p._id) },
-      reportedBy: { $nin: [req.userId] } // Exclude posts reported by this user
+      reportedBy: { $nin: [req.user._id] } // Exclude posts reported by this user
     }).sort({ timestamp: -1 });
     
     res.json(dbPosts);
@@ -34,10 +34,10 @@ const getFeed = async (req, res) => {
   }
 };
 
-const savePost = async (req, res) => {
+export const savePost = async (req, res) => {
   try {
     const { postId } = req.body;
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.user._id);
     
     if (!user.savedPosts.includes(postId)) {
       user.savedPosts.push(postId);
@@ -50,13 +50,13 @@ const savePost = async (req, res) => {
   }
 };
 
-const reportPost = async (req, res) => {
+export const reportPost = async (req, res) => {
   try {
     const { postId } = req.body;
     const post = await Post.findById(postId);
     
-    if (!post.reportedBy.includes(req.userId)) {
-      post.reportedBy.push(req.userId);
+    if (!post.reportedBy.includes(req.user._id)) {
+      post.reportedBy.push(req.user._id);
       await post.save();
     }
     
@@ -66,7 +66,7 @@ const reportPost = async (req, res) => {
   }
 };
 
-const sharePost = async (req, res) => {
+export const sharePost = async (req, res) => {
   try {
     const { postId } = req.body;
     const post = await Post.findById(postId);
@@ -84,5 +84,3 @@ const sharePost = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
-module.exports = { getFeed, savePost, reportPost, sharePost };
